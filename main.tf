@@ -126,7 +126,7 @@ resource "aws_autoscaling_group" "asg" {
   health_check_type         = "ELB"
   desired_capacity          = 2
   force_delete              = true
-  launch_configuration      = aws_launch_configuration.foobar.name
+  launch_configuration      = aws_launch_configuration.web.name
   vpc_zone_identifier       = [aws_subnet.example1.id, aws_subnet.example2.id]
 
   initial_lifecycle_hook {
