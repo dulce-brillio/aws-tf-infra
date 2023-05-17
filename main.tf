@@ -90,9 +90,32 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
-resource "aws_placement_group" "test" {
-  name     = "test"
-  strategy = "cluster"
+data "aws_ami" "amazon2" {
+  most_recent = true
+
+  filter {
+    name = "name"
+    values = ["amzn2-ami-*-hvm-*-arm64-gp2"]
+  }
+
+  filter {
+    name = "architecture"
+    values = ["arm64"]
+  }
+
+  owners = ["amazon"]
+}
+
+resource "aws_launch_configuration" "web" {
+  name_prefix = "web-"
+  image_id = aws_ami.amazon2.image_id
+  instance_type = "t2.micro"
+  key_name = "test"
+  security_groups = [ aws_security_group.alb_sg ]
+  associate_public_ip_address = true
+  lifecycle {
+      create_before_destroy = true
+    }
 }
 
 resource "aws_autoscaling_group" "asg" {
@@ -101,9 +124,8 @@ resource "aws_autoscaling_group" "asg" {
   min_size                  = 2
   health_check_grace_period = 300
   health_check_type         = "ELB"
-  desired_capacity          = 4
+  desired_capacity          = 2
   force_delete              = true
-  placement_group           = aws_placement_group.test.id
   launch_configuration      = aws_launch_configuration.foobar.name
   vpc_zone_identifier       = [aws_subnet.example1.id, aws_subnet.example2.id]
 
