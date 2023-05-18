@@ -118,6 +118,25 @@ resource "aws_launch_configuration" "web" {
     }
 }
 
+resource "aws_lb_target_group" "test-tg" {
+  name     = "test-tg"
+  port     = 8080
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    enabled             = true
+    port                = 8081
+    interval            = 30
+    protocol            = "HTTP"
+    path                = "/health"
+    matcher             = "200"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+  }
+}
+
+
 resource "aws_autoscaling_group" "asg" {
   name                      = "asg"
   max_size                  = 2
@@ -128,6 +147,8 @@ resource "aws_autoscaling_group" "asg" {
   force_delete              = true
   launch_configuration      = aws_launch_configuration.web.name
   vpc_zone_identifier       = [aws_subnet.example1.id, aws_subnet.example2.id]
+  target_group_arns         = [aws_lb_target_group.test-tg.arn]
+
 
   timeouts {
     delete = "15m"
@@ -147,4 +168,17 @@ resource "aws_lb" "test-alb" {
   tags = {
     Environment = "test"
   }
+}
+
+
+resource "aws_lb" "test-alb" {
+  name               = "test-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+
+  subnets = [
+    aws_subnet.subnet-1.id,
+    aws_subnet.subnet-2.id
+  ]
 }
