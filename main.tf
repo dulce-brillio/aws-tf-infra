@@ -47,19 +47,19 @@ resource "aws_route_table" "route_table" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  route {
-    cidr_block = aws_subnet.subnet-1.cidr_block
-    gateway_id = aws_internet_gateway.igw.id
-  }
-
-  route {
-    cidr_block = aws_subnet.subnet-2.cidr_block
-    gateway_id = aws_internet_gateway.igw.id
-  }
-
   tags = {
     Name = "route_table"
   }
+}
+
+resource "aws_route_table_association" "subnet-1" {
+  subnet_id      = aws_subnet.subnet-1.id
+  route_table_id = aws_route_table.route_table.id
+}
+
+resource "aws_route_table_association" "subnet-2" {
+  subnet_id      = aws_subnet.subnet-2.id
+  route_table_id = aws_route_table.route_table.id
 }
 
 resource "aws_security_group" "alb_sg" {
@@ -132,7 +132,7 @@ resource "aws_autoscaling_group" "asg" {
   timeouts {
     delete = "15m"
   }
-  
+
 }
 
 resource "aws_lb" "test-alb" {
