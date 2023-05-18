@@ -91,6 +91,7 @@ resource "aws_security_group" "alb_sg" {
 }
 
 data "aws_ami" "amazon2" {
+  executable_users = ["self"]
   most_recent = true
 
   filter {
